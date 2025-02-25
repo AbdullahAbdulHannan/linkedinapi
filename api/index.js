@@ -22,12 +22,12 @@ const getTimeRanges = () => {
   //   23, 59, 59, 999 // End of the current day in UTC
   // );
 
-  // const utcYesterday = Date.UTC(
-  //   now.getUTCFullYear(),
-  //   now.getUTCMonth(),
-  //   now.getUTCDate() - 1,
-  //   0, 0, 0, 0 // Start of the previous day in UTC
-  // );
+  const utcYesterday = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate() - 1,
+    0, 0, 0, 0 // Start of the previous day in UTC
+  );
 
   const utcThirtyDaysAgo = Date.UTC(
     now.getUTCFullYear(),
@@ -35,14 +35,9 @@ const getTimeRanges = () => {
     now.getUTCDate() - 30,
     0, 0, 0, 0 // Start of 30 days ago in UTC
   );
-  const startOfToday = Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate(),
-    0, 0, 0, 0 // Start of the day in UTC
-  );
+  const startOfToday = new Date().setHours(0, 0, 0, 0); // Start of today in milliseconds
   const currentTime = Date.now(); // Current time in milliseconds
-  return { thirtyDaysAgo: utcThirtyDaysAgo,currentTime,startOfToday };
+  return { thirtyDaysAgo: utcThirtyDaysAgo,currentTime,startOfToday,yesterday:utcYesterday };
 };
 
 // API routes for LinkedIn data fetching
@@ -63,8 +58,8 @@ app.get('/api/linkedin/followers', async (req, res) => {
 
 app.get('/api/linkedin/daily-followers', async (req, res) => {
   try {
-    const { startOfToday, currentTime } = getTimeRanges();
-    const url = `https://api.linkedin.com/v2/organizationalEntityFollowerStatistics?q=organizationalEntity&organizationalEntity=urn:li:organization:${organizationId}&timeIntervals.timeGranularityType=DAY&timeIntervals.timeRange.start=${startOfToday}&timeIntervals.timeRange.end=${currentTime}`;
+    const { yesterday, currentTime } = getTimeRanges();
+    const url = `https://api.linkedin.com/v2/organizationalEntityFollowerStatistics?q=organizationalEntity&organizationalEntity=urn:li:organization:${organizationId}&timeIntervals.timeGranularityType=DAY&timeIntervals.timeRange.start=${yesterday}&timeIntervals.timeRange.end=${currentTime}`;
     const response = await axios.get(url, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
@@ -76,8 +71,9 @@ app.get('/api/linkedin/daily-followers', async (req, res) => {
 });
 app.get('/api/linkedin/page-views', async (req, res) => {
   try {
-    const { startOfToday, currentTime } = getTimeRanges();
-    const url = `https://api.linkedin.com/v2/organizationPageStatistics?q=organization&organization=urn:li:organization:${organizationId}&timeIntervals.timeGranularityType=DAY&timeIntervals.timeRange.start=${startOfToday}&timeIntervals.timeRange.end=${currentTime}`;
+    const { yesterday, currentTime } = getTimeRanges();
+    const url = `https://api.linkedin.com/v2/organizationPageStatistics?q=organization&organization=urn:li:organization:${organizationId}&timeIntervals.timeGranularityType=DAY&timeIntervals.timeRange.start=${yesterday}&timeIntervals.timeRange.end=${currentTime}`;
+
     const response = await axios.get(url, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
