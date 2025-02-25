@@ -154,7 +154,39 @@ app.get('/api/linkedin/engagements', async (req, res) => {
   }
 });
 
+app.get('/api/linkedin/post-engagements', async (req, res) => {
+  try {
+    // Step 1: Fetch latest 3 posts
+    const postsUrl = `https://api.linkedin.com/v2/posts?q=author&author=urn:li:organization:${organizationId}&count=3`;
+    const postsResponse = await axios.get(postsUrl, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
 
+    const latestPosts = postsResponse.data.elements;
+    const postUrns = latestPosts.map(post => post.id);
+
+    // Step 2: Fetch social metadata for each post
+    const engagementRequests = postUrns.map(postUrn => {
+      const url = `https://api.linkedin.com/v2/socialMetadata/${postUrn}`;
+      return axios.get(url, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }).then(response => ({
+        postUrn,
+        data: response.data
+      })).catch(error => ({
+        postUrn,
+        error: error.response?.data || error.message
+      }));
+    });
+
+    const engagementData = await Promise.all(engagementRequests);
+
+    res.json(engagementData);
+  } catch (error) {
+    console.error('Error fetching LinkedIn post engagements:', error.response?.data || error.message);
+    res.status(500).json({ error: 'Failed to fetch post engagements' });
+  }
+});
 
 // app.get('/api/linkedin/total-reels', async (req, res) => {
 //   try {
