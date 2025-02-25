@@ -78,7 +78,6 @@ app.get('/api/linkedin/page-views', async (req, res) => {
   try {
     const { startOfToday, currentTime } = getTimeRanges();
     const url = `https://api.linkedin.com/v2/organizationPageStatistics?q=organization&organization=urn:li:organization:${organizationId}&timeIntervals.timeGranularityType=DAY&timeIntervals.timeRange.start=${startOfToday}&timeIntervals.timeRange.end=${currentTime}`;
-
     const response = await axios.get(url, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
