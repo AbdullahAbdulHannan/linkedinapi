@@ -35,7 +35,12 @@ const getTimeRanges = () => {
     now.getUTCDate() - 30,
     0, 0, 0, 0 // Start of 30 days ago in UTC
   );
-  const startOfToday = new Date().setHours(0, 0, 0, 0); // Start of today in milliseconds
+  const startOfToday = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate(),
+    0, 0, 0, 0 // Start of the day in UTC
+  );
   const currentTime = Date.now(); // Current time in milliseconds
   return { thirtyDaysAgo: utcThirtyDaysAgo,currentTime,startOfToday };
 };
